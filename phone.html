@@ -1,0 +1,177 @@
+<!DOCTYPE html>
+<html lang="english">
+  <head>
+    <title>exported project</title>
+    <meta property="og:title" content="exported project" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <meta charset="utf-8" />
+    <meta property="twitter:card" content="summary_large_image" />
+
+    <style data-tag="reset-style-sheet">
+      html {  line-height: 1.15;}body {  margin: 0;}* {  box-sizing: border-box;  border-width: 0;  border-style: solid;  -webkit-font-smoothing: antialiased;}p,li,ul,pre,div,h1,h2,h3,h4,h5,h6,figure,blockquote,figcaption {  margin: 0;  padding: 0;}button {  background-color: transparent;}button,input,optgroup,select,textarea {  font-family: inherit;  font-size: 100%;  line-height: 1.15;  margin: 0;}button,select {  text-transform: none;}button,[type="button"],[type="reset"],[type="submit"] {  -webkit-appearance: button;  color: inherit;}button::-moz-focus-inner,[type="button"]::-moz-focus-inner,[type="reset"]::-moz-focus-inner,[type="submit"]::-moz-focus-inner {  border-style: none;  padding: 0;}button:-moz-focus,[type="button"]:-moz-focus,[type="reset"]:-moz-focus,[type="submit"]:-moz-focus {  outline: 1px dotted ButtonText;}a {  color: inherit;  text-decoration: inherit;}pre {  white-space: normal;}input {  padding: 2px 4px;}img {  display: block;}details {  display: block;  margin: 0;  padding: 0;}summary::-webkit-details-marker {  display: none;}[data-thq="accordion"] [data-thq="accordion-content"] {  max-height: 0;  overflow: hidden;  transition: max-height 0.3s ease-in-out;  padding: 0;}[data-thq="accordion"] details[data-thq="accordion-trigger"][open] + [data-thq="accordion-content"] {  max-height: 1000vh;}details[data-thq="accordion-trigger"][open] summary [data-thq="accordion-icon"] {  transform: rotate(180deg);}html { scroll-behavior: smooth  }
+    </style>
+    <style data-tag="default-style-sheet">
+      html {
+        font-family: Inter;
+        font-size: 16px;
+      }
+
+      body {
+        font-weight: 400;
+        font-style:normal;
+        text-decoration: none;
+        text-transform: none;
+        letter-spacing: normal;
+        line-height: 1.15;
+        color: var(--dl-color-theme-neutral-dark);
+        background: var(--dl-color-theme-neutral-light);
+
+        fill: var(--dl-color-theme-neutral-dark);
+      }
+    </style>
+    <link
+      rel="stylesheet"
+      href="https://unpkg.com/animate.css@4.1.1/animate.css"
+    />
+    <link
+      rel="stylesheet"
+      href="https://fonts.googleapis.com/css2?family=Inter:ital,wght@0,100;0,200;0,300;0,400;0,500;0,600;0,700;0,800;0,900;1,100;1,200;1,300;1,400;1,500;1,600;1,700;1,800;1,900&amp;display=swap"
+      data-tag="font"
+    />
+    <link
+      rel="stylesheet"
+      href="https://fonts.googleapis.com/css2?family=STIX+Two+Text:ital,wght@0,400;0,500;0,600;0,700;1,400;1,500;1,600;1,700&amp;display=swap"
+      data-tag="font"
+    />
+    <link
+      rel="stylesheet"
+      href="https://fonts.googleapis.com/css2?family=Noto+Sans:ital,wght@0,100;0,200;0,300;0,400;0,500;0,600;0,700;0,800;0,900;1,100;1,200;1,300;1,400;1,500;1,600;1,700;1,800;1,900&amp;display=swap"
+      data-tag="font"
+    />
+    <link
+      rel="stylesheet"
+      href="https://fonts.googleapis.com/css2?family=Inter:ital,wght@0,100;0,200;0,300;0,400;0,500;0,600;0,700;0,800;0,900;1,100;1,200;1,300;1,400;1,500;1,600;1,700;1,800;1,900&amp;display=swap"
+      data-tag="font"
+    />
+    <link
+      rel="stylesheet"
+      href="https://fonts.googleapis.com/css2?family=Afacad:ital,wght@0,400;0,500;0,600;0,700;1,400;1,500;1,600;1,700&amp;display=swap"
+      data-tag="font"
+    />
+    <link
+      rel="stylesheet"
+      href="https://fonts.googleapis.com/css2?family=Acme:wght@400&amp;display=swap"
+      data-tag="font"
+    />
+    <link
+      rel="stylesheet"
+      href="https://fonts.googleapis.com/css2?family=Acme:wght@400&amp;display=swap"
+      data-tag="font"
+    />
+    <link
+      rel="stylesheet"
+      href="https://unpkg.com/@teleporthq/teleport-custom-scripts/dist/style.css"
+    />
+  </head>
+  <body>
+    <link rel="stylesheet" href="/static/style.css" />
+    <div>
+      <link href="/static/index.css" rel="stylesheet" />
+
+      <div class="phone-container1">
+        <div class="phone-thq-phone-elm">
+          <button id="btn-real" class="phone-thq-components-button-desktop-large-basic-elm1">
+            <span class="phone-thq-text-elm1">REAL</span>
+          </button>
+          <button id="btn-bogus" class="phone-thq-components-button-desktop-large-basic-elm2">
+            <span class="phone-thq-text-elm2">BOGUS</span>
+          </button>
+          <span class="phone-thq-text-elm3">cast vote</span>
+        </div>
+  
+      </div>
+      <link rel="canonical" href="https://untitled-2cwbs4.teleporthq.app/" />
+      <!-- socket.io client -->
+      <script src="https://cdn.socket.io/4.5.4/socket.io.min.js"></script>
+      <script>
+          // 连接到Flask服务器的Socket.IO
+          const socket = io('http://127.0.0.1:5000', {
+              reconnection: true,
+              reconnectionDelay: 1000,
+              reconnectionDelayMax: 5000,
+              reconnectionAttempts: 5
+          });
+
+          const btnReal = document.getElementById('btn-real');
+          const btnBogus = document.getElementById('btn-bogus');
+
+          // Socket连接状态提示
+          socket.on('connect', () => {
+              console.log('[✓] Connected to voting server');
+              btnReal.disabled = false;
+              btnBogus.disabled = false;
+              btnReal.innerText = 'REAL - Ready';
+              btnBogus.innerText = 'BOGUS - Ready';
+          });
+
+          socket.on('connect_error', (error) => {
+              console.error('[✗] Connection error:', error);
+              alert('Cannot connect to voting server. Please make sure Flask app is running: python app.py');
+              btnReal.disabled = true;
+              btnBogus.disabled = true;
+          });
+
+          function cast(choice) {
+              console.log('[VOTE] Casting vote:', choice);
+              socket.emit('vote', { choice });
+          }
+
+          btnReal.addEventListener('click', () => {
+              btnReal.disabled = true;
+              btnReal.innerText = 'Sending...';
+              cast('real');
+          });
+          
+          btnBogus.addEventListener('click', () => {
+              btnBogus.disabled = true;
+              btnBogus.innerText = 'Sending...';
+              cast('bogus');
+          });
+
+          socket.on('vote_confirmed', () => {
+              console.log('[✓] Vote confirmed by server');
+              alert('Vote submitted successfully! Thank you for participating!');
+              btnReal.disabled = true;
+              btnBogus.disabled = true;
+              btnReal.innerText = 'REAL - Voted';
+              btnBogus.innerText = 'BOGUS - Voted';
+          });
+
+          socket.on('vote_error', (data) => {
+              console.error('[✗] Vote error:', data);
+              alert('Vote failed: ' + data.msg);
+              btnReal.disabled = false;
+              btnBogus.disabled = false;
+              btnReal.innerText = 'REAL';
+              btnBogus.innerText = 'BOGUS';
+          });
+
+          socket.on('update', state => {
+              console.log('[UPDATE] Server state:', state);
+              // 只在投票阶段启用按钮
+              if (state.stage !== 'voting' && !btnReal.disabled) {
+                  console.log('[INFO] Voting stage is', state.stage);
+              }
+          });
+
+          socket.on('disconnect', () => {
+              console.warn('[!] Disconnected from server');
+              btnReal.disabled = true;
+              btnBogus.disabled = true;
+              btnReal.innerText = 'REAL - Offline';
+              btnBogus.innerText = 'BOGUS - Offline';
+          });
+      </script>
+    </div>
+  </body>
+</html>

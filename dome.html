@@ -1,0 +1,250 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>DomeViz - Stage View</title>
+    <script src="https://cdn.socket.io/4.0.1/socket.io.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+   
+    <style>
+        body {
+            background-color: black;
+            color: white;
+            font-family: 'Segoe UI', sans-serif;
+            margin: 0;
+            height: 100vh;
+            display: flex;
+            overflow-y: scroll;
+        }
+        /* LEFT (Dome) */
+        .left-panel {
+            flex: 1;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            border-right: 1px solid #333;
+        }
+        .doughnut-container { width: 70%; max-width: 500px; aspect-ratio: 1/1; opacity: 0.8; transition: opacity 0.5s;}
+       
+        /* 新加鱼眼样式：圆形，外面黑，下边地平线模拟 */
+        .fisheye-container {
+            width: 85%;
+            max-width: 700px;
+            aspect-ratio: 1/1;
+            background: #000;
+            border-radius: 50%;
+            overflow: hidden;
+            margin: 20px auto;
+            box-shadow: 
+                0 0 20px rgba(255,255,255,0.15),
+                0 0 40px rgba(0, 212, 255, 0.1); /* 模拟穹顶辉光 */
+            position: relative;
+        }
+        .fisheye-container img {
+            width: 100%;
+            height: 100%;
+            object-fit: cover;
+            object-position: center;
+            transition: opacity 0.5s ease;
+        }
+        .fisheye-label {
+            position: absolute;
+            bottom: 15px;
+            left: 50%;
+            transform: translateX(-50%);
+            color: #00d4ff;
+            font-size: 0.9rem;
+            font-weight: bold;
+            text-shadow: 0 0 10px rgba(0, 212, 255, 0.5);
+            background: rgba(0, 0, 0, 0.7);
+            padding: 5px 15px;
+            border-radius: 20px;
+        }
+
+
+        /* RIGHT (Stats) */
+        .right-panel {
+            flex: 1;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            padding: 40px;
+        }
+        .bar-container { width: 90%; height: 60%; }
+
+
+        /* STAGE INDICATOR */
+        .stage-badge {
+            padding: 10px 30px;
+            border-radius: 50px;
+            font-weight: bold;
+            font-size: 1.2rem;
+            margin-bottom: 20px;
+            text-transform: uppercase;
+        }
+        .bg-show { background: #333; color: #aaa; }
+        .bg-voting { background: #00C853; color: black; box-shadow: 0 0 20px #00C853; }
+        .bg-reveal { background: #FFD600; color: black; }
+
+
+        h1 { margin: 0; font-size: 2.5rem; }
+        h3 { color: #666; margin-bottom: 20px; }
+        
+    </style>
+    
+</head>
+<body>
+
+
+    <!-- LEFT -->
+    <div class="left-panel">
+        <h1 style="color:#aaa;">Dome View</h1>
+        <h3 id="obj-id-left">Loading...</h3>
+       
+        <!-- 显示静态图片: image.png -->
+        <div style="margin:20px auto; text-align:center;">
+            <img src="{{ url_for('static', filename='image/image.png') }}" 
+                 alt="Static Image" 
+                 style="max-width:80%; border:2px solid #444;" />
+        </div>
+        <!-- 新加鱼眼图像容器（模拟穹顶视图，参考你的 Immersive Cosmos PDF 中的 visualization engine） -->
+         
+        <div class="fisheye-container">
+            <img 
+                id="astro-image"
+                src="{{ url_for('static', filename='image/object1.png') }}"
+                alt="ZTF Astronomical Image">
+            <div class="fisheye-label" id="fisheye-label">Loading...</div>
+        </div>
+       
+        <div class="doughnut-container" id="dome-visual">
+            <canvas id="domeChart"></canvas>
+        </div>
+       
+        <!-- 新加 QR 码（从服务器生成） -->
+        <div style="margin-top: 20px; text-align: center;">
+            <h3>Scan to Join</h3>
+            <img src="/static/qr_code.png" alt="QR Code" style="width: 150px; background: white; padding: 10px; border-radius: 10px;">
+            <div style="margin-top: 15px; font-size: 0.9rem; color: #999;">
+                <p>Or open in browser:</p>
+                <a id="phone-link" href="/phone" style="color: #00d4ff; text-decoration: none; font-weight: bold;">
+                    Click here to vote
+                </a>
+                <p id="phone-url" style="font-size: 0.8rem; margin-top: 5px;"></p>
+            </div>
+        </div>
+    </div>
+
+
+    <!-- RIGHT -->
+    <div class="right-panel">
+        <!-- New Stage Indicator -->
+        <div id="stage-indicator" class="stage-badge bg-show">WAITING</div>
+
+
+        <h1 id="main-title">Statistics</h1>
+       
+        <div class="bar-container">
+            <canvas id="barChart"></canvas>
+        </div>
+        <h3 id="connected-users">Connected Users: 0</h3>
+        <h3 id="total-votes">Total Votes: 0</h3>  
+    </div>
+
+
+    <script>
+        const socket = io();
+        const COLOR_REAL = '#00d4ff';
+        const COLOR_BOGUS = '#ff0055';
+
+        // 图像映射：根据对象ID选择对应的天文图像
+        const imageMap = {
+            'ZTF-2024-A': '/static/image/object1.png',
+            'ZTF-2024-B': '/static/image/image.png',
+            'ZTF-2024-C': '/static/image/object1.png'
+        };
+
+        // 显示当前服务器的投票URL
+        const phoneUrl = window.location.protocol + '//' + window.location.host + '/phone';
+        document.getElementById('phone-url').innerText = phoneUrl;
+        
+        // Fisheye 图像更新函数
+        function updateFisheyeImage(objectId) {
+            const imageEl = document.getElementById('astro-image');
+            const labelEl = document.getElementById('fisheye-label');
+            const imagePath = imageMap[objectId] || '/static/image/object1.png';
+            
+            imageEl.style.opacity = '0';
+            setTimeout(() => {
+                imageEl.src = imagePath;
+                imageEl.style.opacity = '1';
+            }, 250);
+            
+            labelEl.innerText = objectId;
+        }
+        
+        // 1. CHART SETUP (Simplified for brevity, same as before)
+        const ctxDome = document.getElementById('domeChart').getContext('2d');
+        const domeChart = new Chart(ctxDome, {
+            type: 'doughnut',
+            data: { labels: ['REAL', 'BOGUS'], datasets: [{ data: [0, 0], backgroundColor: [COLOR_REAL, COLOR_BOGUS], borderWidth:0 }] },
+            options: { plugins: { legend: { position: 'bottom', labels: { color: '#ccc' } } } }
+        });
+
+
+        const ctxBar = document.getElementById('barChart').getContext('2d');
+        const barChart = new Chart(ctxBar, {
+            type: 'bar',
+            data: { labels: ['REAL', 'BOGUS'], datasets: [{ data: [0, 0], backgroundColor: [COLOR_REAL, COLOR_BOGUS], borderRadius: 5 }] },
+            options: { scales: { y: { beginAtZero: true, grid: { color: '#333' } }, x: { grid: { display: false } } }, plugins: { legend: { display: false } } }
+        });
+
+
+        // 2. LOGIC
+        socket.on("update", function(state) {
+            // Update Text
+            document.getElementById("obj-id-left").innerText = state.object_id;
+           
+            // 更新鱼眼图像
+            updateFisheyeImage(state.object_id);
+            
+            // UPDATE STAGE VISUALS
+            const badge = document.getElementById("stage-indicator");
+            const visual = document.getElementById("dome-visual");
+
+
+            if(state.stage === 'show'){
+                badge.innerText = "OBSERVE PHASE";
+                badge.className = "stage-badge bg-show";
+                visual.style.opacity = "0.3"; // Dim the chart so they look at the sky (simulated)
+            }
+            else if(state.stage === 'voting'){
+                badge.innerText = "VOTING OPEN";
+                badge.className = "stage-badge bg-voting";
+                visual.style.opacity = "1";
+            }
+            else if(state.stage === 'reveal'){
+                badge.innerText = "FINAL RESULT";
+                badge.className = "stage-badge bg-reveal";
+                visual.style.opacity = "1";
+            }
+
+
+            // Update Data
+            const voteData = [state.votes.real, state.votes.bogus];
+            domeChart.data.datasets[0].data = voteData;
+            domeChart.update();
+            barChart.data.datasets[0].data = voteData;
+            barChart.update();
+            
+            // 加: 更新参与人数和总票数
+            document.getElementById("connected-users").innerText = "Connected Users: " + state.connected_users;
+            document.getElementById("total-votes").innerText = "Total Votes: " + (state.votes.real + state.votes.bogus);
+        });
+
+
+        // 新加注释：参考 Immersive Cosmos PDF，可以扩展用 Three.js 加 6-DOF gaze filtering
+    </script>
+</body>
+</html>

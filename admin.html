@@ -1,0 +1,16 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Admin Controller</title>
+    <script src="https://cdn.socket.io/4.0.1/socket.io.min.js"></script>
+</head>
+<body style="background: black; color: white; text-align: center;">
+    <h1>Admin Controls</h1>
+    <button onclick="nextStage()">NEXT STEP</button>
+    <script>
+        const socket = io();
+        function nextStage(){ socket.emit("advance_stage"); }
+    </script>
+</body>
+</html>
